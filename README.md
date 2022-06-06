@@ -1,5 +1,1 @@
-<<<<<<< HEAD
-# ERC721
-=======
-
->>>>>>> 5381a60 (init)
+# ERC721 Smart Contract
