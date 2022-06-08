@@ -10,6 +10,7 @@ import "openzeppelin-contracts.git/contracts/utils/cryptography/MerkleProof.sol"
 //TODO add Comments to the code Natspec
 
 contract ERC721Contract is ERC721, Ownable, ReentrancyGuard{
+    using Strings for uint256;
     using Counters for Counters.Counter;
 
     //Keep track of the current tokenId can be checked with maxSupply to see if max supply was reached
@@ -26,6 +27,8 @@ contract ERC721Contract is ERC721, Ownable, ReentrancyGuard{
 
     //link to the metadata hosted on IPFS
     string internal uri;
+
+    string internal hiddenUri;
 
     //The revealed state of an Token
     bool public revealed = false;
@@ -80,9 +83,16 @@ contract ERC721Contract is ERC721, Ownable, ReentrancyGuard{
 
     }
 
-    //TODO tokenUri function with reveal state check.
     function tokenURI(uint256 _tokenId) public view virtual override returns (string memory) {
+        require(_exists(_tokenId), "ERC721Metadata: URI query for nonexistent token");
 
+        if (revealed == false) {
+            return hiddenUri;
+        }
+
+        string memory currBaseUri = _baseURI();
+
+        return string.concat(currBaseUri,  _tokenId.toString());
     }
 
     function setUri(string memory _uri) external onlyOwner {
