@@ -7,11 +7,15 @@ import "openzeppelin-contracts.git/contracts/security/ReentrancyGuard.sol";
 import "openzeppelin-contracts.git/contracts/utils/Counters.sol";
 import "openzeppelin-contracts.git/contracts/utils/cryptography/MerkleProof.sol";
 
+//TODO add Comments to the code Natspec
+
 contract ERC721Contract is ERC721, Ownable, ReentrancyGuard{
     using Counters for Counters.Counter;
 
+    //Keep track of the current tokenId can be checked with maxSupply to see if max supply was reached
     Counters.Counter private tokenId;
 
+    //Merkle tree root
     bytes32 public root;
 
     //The Max supply of NFTs that can be minted
@@ -61,6 +65,8 @@ contract ERC721Contract is ERC721, Ownable, ReentrancyGuard{
     function whitlistedMint(bytes32[] calldata _proof) external payable mintable {
         require(presale, "Presale didn't started");
         require(!addressMinted[msg.sender], "Already minted");
+        require(msg.value >= price, "Not enought Ether send");
+
 
         //Check if address is in whitlist with Merkle tree
         bytes32 leaf = keccak256(abi.encodePacked(msg.sender));
@@ -71,6 +77,11 @@ contract ERC721Contract is ERC721, Ownable, ReentrancyGuard{
 
         _safeMint(msg.sender, tokenId.current());
 
+
+    }
+
+    //TODO tokenUri function with reveal state check.
+    function tokenURI(uint256 _tokenId) public view virtual override returns (string memory) {
 
     }
 
@@ -92,6 +103,17 @@ contract ERC721Contract is ERC721, Ownable, ReentrancyGuard{
 
     function setPresale(bool _state) external onlyOwner {
         presale = _state;
+    }
+
+    function mintOwner(uint256 _amount) external onlyOwner {
+
+        for (uint256 i = 0; i < _amount;){
+            tokenId.increment();
+            
+            _safeMint(msg.sender, tokenId.current());
+            unchecked{ ++i; }
+        }
+        
     }
 
     function withdraw() external onlyOwner {
